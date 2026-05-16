@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StegoVault — LSB Steganography Tool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="brand">
+      <span class="brand-icon">🔐</span>
+      <div>
+        <span class="brand-name">StegoVault</span>
+        <span class="brand-sub">LSB Image Steganography</span>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="hbadge">LSB</span>
+      <span class="hbadge accent">PNG · BMP</span>
+      <span class="hbadge">v1.0</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── Tab Switcher ── -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="encode">
+        <span>🔒</span> Hide Message
+      </button>
+      <button class="tab-btn" data-tab="decode">
+        <span>🔓</span> Reveal Message
+      </button>
+    </div>
+
+    <!-- ════════════════════════ ENCODE TAB ════════════════════════ -->
+    <div class="tab-panel active" id="tab-encode">
+
+      <div class="two-col">
+
+        <!-- Left: inputs -->
+        <div class="input-col">
+
+          <!-- Drop zone -->
+          <div class="card">
+            <div class="card-label">CARRIER IMAGE (PNG or BMP)</div>
+            <div class="drop-zone" id="enc-drop">
+              <div class="drop-icon">🖼️</div>
+              <div class="drop-text">Drag &amp; drop image here</div>
+              <div class="drop-sub">or click to browse · PNG / BMP only</div>
+              <input type="file" id="enc-file" accept=".png,.bmp" hidden/>
+            </div>
+            <div class="img-preview-wrap" id="enc-preview-wrap" style="display:none">
+              <img id="enc-preview" class="img-preview" alt="preview"/>
+              <div class="img-preview-label" id="enc-preview-label"></div>
+              <button class="btn-remove" id="enc-remove">✕ Remove</button>
+            </div>
+          </div>
+
+          <!-- Message input -->
+          <div class="card">
+            <div class="card-label">SECRET MESSAGE</div>
+            <textarea
+              id="enc-message"
+              class="message-area"
+              placeholder="Type your secret message here…"
+              rows="5"
+            ></textarea>
+            <div class="capacity-row">
+              <span class="cap-text" id="cap-text">Select an image to see capacity</span>
+              <span class="char-count" id="char-count">0 chars</span>
+            </div>
+            <div class="capacity-bar-track">
+              <div class="capacity-bar-fill" id="cap-bar"></div>
+            </div>
+          </div>
+
+          <button class="btn-action" id="encode-btn" disabled>
+            <span id="encode-btn-text">🔒 Hide Message in Image</span>
+          </button>
+
+          <div class="error-banner" id="enc-error" style="display:none"></div>
+        </div>
+
+        <!-- Right: result -->
+        <div class="result-col" id="enc-result-col" style="display:none">
+
+          <div class="card compare-card">
+            <div class="card-label">COMPARISON</div>
+            <div class="compare-grid">
+              <div class="compare-item">
+                <div class="compare-badge original">Original</div>
+                <img id="cmp-original" class="compare-img" alt="original"/>
+              </div>
+              <div class="compare-item">
+                <div class="compare-badge encoded">Encoded</div>
+                <img id="cmp-encoded" class="compare-img" alt="encoded"/>
+              </div>
+            </div>
+            <p class="compare-note">
+              💡 Images look identical — the secret is hidden in the Least Significant Bits of each pixel.
+            </p>
+          </div>
+
+          <div class="card meta-card">
+            <div class="card-label">ENCODE STATISTICS</div>
+            <div class="meta-grid" id="enc-meta-grid"></div>
+            <div class="usage-row">
+              <span class="usage-label">Bits used</span>
+              <div class="usage-bar-track">
+                <div class="usage-bar-fill" id="usage-bar"></div>
+              </div>
+              <span class="usage-pct" id="usage-pct">0%</span>
+            </div>
+          </div>
+
+          <button class="btn-download" id="download-btn">
+            ⬇️ Download Encoded Image
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════ DECODE TAB ════════════════════════ -->
+    <div class="tab-panel" id="tab-decode">
+
+      <div class="two-col">
+
+        <!-- Left: upload -->
+        <div class="input-col">
+          <div class="card">
+            <div class="card-label">ENCODED IMAGE (PNG or BMP)</div>
+            <div class="drop-zone" id="dec-drop">
+              <div class="drop-icon">🖼️</div>
+              <div class="drop-text">Drag &amp; drop encoded image here</div>
+              <div class="drop-sub">or click to browse · PNG / BMP only</div>
+              <input type="file" id="dec-file" accept=".png,.bmp" hidden/>
+            </div>
+            <div class="img-preview-wrap" id="dec-preview-wrap" style="display:none">
+              <img id="dec-preview" class="img-preview" alt="preview"/>
+              <div class="img-preview-label" id="dec-preview-label"></div>
+              <button class="btn-remove" id="dec-remove">✕ Remove</button>
+            </div>
+          </div>
+
+          <button class="btn-action" id="decode-btn" disabled>
+            <span id="decode-btn-text">🔓 Reveal Hidden Message</span>
+          </button>
+
+          <div class="error-banner" id="dec-error" style="display:none"></div>
+        </div>
+
+        <!-- Right: result -->
+        <div class="result-col" id="dec-result-col" style="display:none">
+
+          <div class="card">
+            <div class="card-label">HIDDEN MESSAGE FOUND</div>
+            <div class="message-reveal" id="decoded-message"></div>
+            <button class="btn-copy" id="copy-msg-btn">📋 Copy Message</button>
+          </div>
+
+          <div class="card meta-card">
+            <div class="card-label">IMAGE METADATA</div>
+            <div class="meta-grid" id="dec-meta-grid"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════ HOW IT WORKS ════════════════════════ -->
+    <section class="card how-card">
+      <div class="card-label">HOW LSB STEGANOGRAPHY WORKS</div>
+      <div class="how-grid">
+
+        <div class="how-step">
+          <div class="step-num">01</div>
+          <h3>Every pixel has 3 channels</h3>
+          <p>Each pixel in an RGB image stores three 8-bit values — Red, Green, and Blue (0–255). That's 24 bits per pixel.</p>
+        </div>
+
+        <div class="how-step">
+          <div class="step-num">02</div>
+          <h3>Modify the least significant bit</h3>
+          <p>The last bit of each channel value has the smallest visual impact. Changing it shifts the color value by at most ±1, which is invisible to the human eye.</p>
+          <div class="bit-demo">
+            <div class="bit-row">
+              <span class="bit-label">R:</span>
+              <span class="bit-val">1011011<span class="bit-lsb changed">0</span></span>
+              <span class="bit-arrow">→</span>
+              <span class="bit-val">1011011<span class="bit-lsb msg">1</span></span>
+              <span class="bit-note">182 → 183 (stores bit: 1)</span>
+            </div>
+            <div class="bit-row">
+              <span class="bit-label">G:</span>
+              <span class="bit-val">1001110<span class="bit-lsb">0</span></span>
+              <span class="bit-arrow">→</span>
+              <span class="bit-val">1001110<span class="bit-lsb">0</span></span>
+              <span class="bit-note">156 → 156 (stores bit: 0)</span>
+            </div>
+            <div class="bit-row">
+              <span class="bit-label">B:</span>
+              <span class="bit-val">1110111<span class="bit-lsb changed">1</span></span>
+              <span class="bit-arrow">→</span>
+              <span class="bit-val">1110111<span class="bit-lsb msg">0</span></span>
+              <span class="bit-note">239 → 238 (stores bit: 0)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="how-step">
+          <div class="step-num">03</div>
+          <h3>Encode the full message</h3>
+          <p>The message is first converted to binary (UTF-8). A 32-bit length header is stored first, followed by all message bits — 3 bits per pixel across the image.</p>
+        </div>
+
+        <div class="how-step">
+          <div class="step-num">04</div>
+          <h3>Decode by reading LSBs</h3>
+          <p>To extract, read the LSB from each channel in order. The first 32 bits give the message length, then read that many bytes to recover the original text.</p>
+        </div>
+
+      </div>
+
+      <div class="capacity-formula">
+        <span class="formula-label">Capacity formula:</span>
+        <code class="formula-code">max_chars = (width × height × 3 − 32) ÷ 8</code>
+        <span class="formula-note">e.g. a 800×600 image → 180,000 characters</span>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="copy-toast" id="copy-toast">Copied!</div>
+
+  <footer>
+    <p>StegoVault &nbsp;·&nbsp; Built with Python &amp; Flask &nbsp;·&nbsp; LSB Steganography</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
